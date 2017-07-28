@@ -4,8 +4,8 @@ set -e
 
 NAME=snmp_subagent
 
-export GOPATH=$BUILDDIR/go
-PROJECTDIR=$GOPATH/src/gitlab.intraway.com/sentinel/sentinel-snmp-subagent
+#export GOPATH=$BUILDDIR/go
+PROJECTDIR=$GOPATH/src/gitlab.intraway.com/ronald.jaimes/snmp_agent_extras
 
 mkdir -p $PROJECTDIR
 cp -r *.go snmp_subagent/ test $PROJECTDIR
