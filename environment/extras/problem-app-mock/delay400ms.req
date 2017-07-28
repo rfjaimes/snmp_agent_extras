@@ -1,0 +1,27 @@
+{
+  'httpRequest': {
+    'method': 'GET',
+    'path': '/delay400ms'
+  },
+  'httpResponse': {
+    'statusCode': 200,
+    'headers': [
+      {
+        'name': 'Content-Type',
+        'values': [
+          'application/json; charset=utf-8'
+        ]
+      }
+    ],
+    'body': '{\n    "first": 400,\n}',
+
+    'delay': {
+        'timeUnit': 'MILLISECONDS',
+        'value': 400
+    }
+  },
+   'times': {
+       'unlimited': true
+   }
+}
+

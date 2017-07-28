@@ -1,0 +1,38 @@
+---
+messageEnv: 'iwSentinelSnmpSubagent'
+
+iwsnmpsubagent::config:
+    path_prefix: '/opt/iway/sentinel'
+    package:
+        repo: 'iw-repo-noarch'
+        name: 'iw_sentinel_snmpsubagent'
+        ensure: '1.0.0'
+        base_path: 'snmp_subagent'
+    ownership:
+        user: 'nobody'
+        group: 'nobody'
+
+iwsnmpsubagent::manage_snmpd: true
+iwsnmpsubagent::snmp_port: 9161
+iwsnmpsubagent::snmp_community: 'sentinel'
+iwsnmpsubagent::agentx_protocol: 'tcp'
+iwsnmpsubagent::agentx_address: 'localhost:9705'
+iwsnmpsubagent::discover_timeout: 500
+iwsnmpsubagent::get_timeout: 500
+iwsnmpsubagent::endpoint_address: '0.0.0.0:11111'
+iwsnmpsubagent::logging:
+  stdout:
+    level: 'DEBUG'
+    format: 'plain'
+  file:
+    level: 'DEBUG'
+    dir: '/var/log/iway/snmp-subagent'
+    format: 'plain'
+
+
+iwnetsnmp::config:
+    package:
+        manage: true
+        repo: 'iw-repo'
+        name: 'iw_net-snmp573'
+        ensure: 'latest'

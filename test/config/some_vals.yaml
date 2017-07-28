@@ -1,0 +1,2 @@
+agentx_protocol: "udp"
+get_timeout: 456

@@ -1,0 +1,21 @@
+{
+  'httpRequest': {
+    'method': 'GET',
+    'path': '/bbb'
+  },
+  'httpResponse': {
+    'statusCode': 200,
+    'headers': [
+      {
+        'name': 'Content-Type',
+        'values': [
+          'application/json; charset=utf-8'
+        ]
+      }
+    ],
+    'body': '{\n    "first": "10.20.30.40",\n    "second": 4222,\n    "third": 11333,\n    "aaa.bbb.ccc": 771\n}'
+  },
+   'times': {
+       'unlimited': true
+   }
+}

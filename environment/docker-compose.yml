@@ -1,0 +1,46 @@
+version: '2'
+
+services:
+  snmp_subagent:
+    build:
+      context: test_layer
+      dockerfile: snmp_subagent-6_64.dockerfile
+    #image: registry.intraway.com/sentinel/snmp_subagent_minimal:master
+    #image: registry.intraway.com/sentinel/snmp_subagent-6_64:development
+    environment:
+      - DISABLE_SNMPD_IPV6=yes
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+
+  app1-mock:
+    image: registry.intraway.com/delivery/mock/http:1.0.0
+    volumes:
+      - ./extras/app1-mock:/tmp/mock:ro
+      - /etc/localtime:/etc/localtime:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "1"
+
+  app2-mock:
+    image: registry.intraway.com/delivery/mock/http:1.0.0
+    volumes:
+      - ./extras/app2-mock:/tmp/mock:ro
+      - /etc/localtime:/etc/localtime:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "1"
+
+  problem-app-mock:
+    image: registry.intraway.com/delivery/mock/http:1.0.0
+    volumes:
+      - ./extras/problem-app-mock:/tmp/mock:ro
+      - /etc/localtime:/etc/localtime:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "1"

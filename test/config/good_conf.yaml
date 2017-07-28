@@ -1,0 +1,14 @@
+agentx_protocol: "udp"
+agentx_address: "127.1.1.5:890"
+discover_timeout: 123
+get_timeout: 456
+endpoint_address: "0.0.0.0:11111"
+db_file: "data/test.db"
+logging:
+  stdout:
+    level: 'DEBUG'
+    format: 'json'
+  file:
+    level: 'INFO'
+    dir: '/var/log/iway/snmp-subagent'
+    format: 'plain'

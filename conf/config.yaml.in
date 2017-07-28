@@ -1,0 +1,14 @@
+agentx_protocol: "tcp"
+agentx_address: "localhost:705"
+discover_timeout: 100
+get_timeout: 100
+endpoint_address: "0.0.0.0:8080"
+db_file: "data/applications.db"
+logging:
+  stdout:
+    level: 'DEBUG'
+    format: 'plain'
+  file:
+    level: 'DEBUG'
+    format: 'json'
+    dir: '/var/log/iway/snmp-subagent'

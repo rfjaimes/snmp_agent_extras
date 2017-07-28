@@ -1,0 +1,21 @@
+{
+  'httpRequest': {
+    'method': 'GET',
+    'path': '/data'
+  },
+  'httpResponse': {
+    'statusCode': 200,
+    'headers': [
+      {
+        'name': 'Content-Type',
+        'values': [
+          'application/json; charset=utf-8'
+        ]
+      }
+    ],
+    'body': '{\n    "name": "App 2",\n    "version": "3.14.15",\n    "status": 1,\n    "uptime": 2116\n}'
+  },
+   'times': {
+       'unlimited': true
+   }
+}

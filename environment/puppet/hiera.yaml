@@ -1,0 +1,9 @@
+---
+:backends:
+    - yaml
+:yaml:
+    :datadir: "hieradata"
+:hierarchy:
+    - "%{::environment}/%{calling_module}"
+
+:merge_behavior: deeper

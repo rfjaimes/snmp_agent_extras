@@ -1,0 +1,24 @@
+CUSTOM-EXAMPLE-MIB DEFINITIONS ::= BEGIN
+
+--
+-- Example MIB objects for agent module example implementations
+--
+
+IMPORTS
+    MODULE-IDENTITY  FROM SNMPv2-SMI
+    netSnmp                                 FROM NET-SNMP-MIB
+;
+
+customExample MODULE-IDENTITY
+    LAST-UPDATED "201701270000Z"
+    ORGANIZATION "www.intraway.com"
+    CONTACT-INFO
+	 "email:    nicolas.dascanio@intraway.com"
+    DESCRIPTION
+	"Example MIB objects for agent module example implementations"
+    REVISION     "201701270000Z"
+    DESCRIPTION
+	"First Revision"
+    ::= { netSnmp 100 }
+
+END

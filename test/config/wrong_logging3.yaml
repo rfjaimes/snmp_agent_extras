@@ -1,0 +1,4 @@
+logging:
+  stdout:
+    level: 'DEBUG'
+    format: 'yaml'

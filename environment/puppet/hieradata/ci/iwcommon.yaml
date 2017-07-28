@@ -1,0 +1,26 @@
+---
+messageEnv: 'iwCommon'
+
+iwcommon::extra_repo:
+  'iw-repo':
+    descr:    "Intraway's Releases YUM Repository - IW"
+    baseurl:  'http://yum.intraway.com/releases/el$releasever/$basearch'
+    enabled:  '0'
+    gpgcheck: '0'
+  'iw-repo-noarch':
+    descr:    "Intraway's Releases YUM Repository (noarch)- IW"
+    baseurl:  'http://yum.intraway.com/releases/el$releasever/noarch'
+    enabled:  '0'
+    gpgcheck: '0'
+  'iw-repo-dev':
+    descr:    "Intraway's Snapshots YUM Repository - IW"
+    baseurl:  'http://yum.intraway.com/development/el$releasever/$basearch'
+    enabled:  '0'
+    gpgcheck: '0'
+  'iw-repo-dev-noarch':
+    descr:    "Intraway's Snapshots YUM Repository (noarch)- IW"
+    baseurl:  'http://yum.intraway.com/development/el$releasever/noarch'
+    enabled:  '0'
+    gpgcheck: '0'
+
+iwcommon::artifacts::server: 'http://artifacts.intraway.com'

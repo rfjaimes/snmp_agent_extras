@@ -1,0 +1,4 @@
+.tmp/
+environments/
+modules/
+Puppetfile.lock

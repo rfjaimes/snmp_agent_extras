@@ -1,0 +1,21 @@
+{
+  'httpRequest': {
+    'method': 'GET',
+    'path': '/data'
+  },
+  'httpResponse': {
+    'statusCode': 200,
+    'headers': [
+      {
+        'name': 'Content-Type',
+        'values': [
+          'application/json; charset=utf-8'
+        ]
+      }
+    ],
+    'body': '{\n    "not_an_int": "10a",\n    "negative": "-10",\n    "too_big_int": 4294967297\n}'
+  },
+   'times': {
+       'unlimited': true
+   }
+}

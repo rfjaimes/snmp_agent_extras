@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+
+# External Modules
+forge "https://forgeapi.puppetlabs.com"
+
+# A module from a git branch/tag
+# mod 'puppetlabs-apt',
+#   :git => 'https://github.com/puppetlabs/puppetlabs-apt.git',
+#   :ref => '1.4.x'
+
+mod 'intraway-iwcommon',
+    :git => 'http://gitlab.intraway.com/puppet-recipes/iwcommon.git',
+    :ref => 'v0.3.6'
+
+mod 'intraway-iwnetsnmp',
+    :git => 'http://gitlab.intraway.com/puppet-recipes/iwnetsnmp.git',
+    :ref => '0.1.0'
+
+mod 'intraway-iwsnmpsubagent',
+    :git => 'http://gitlab.intraway.com/puppet-recipes/iwsnmpsubagent.git',
+    :ref => '0.1.0'

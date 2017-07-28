@@ -1,0 +1,22 @@
+{
+  'httpRequest': {
+    'method': 'GET',
+    'path': '/discover'
+  },
+  'httpResponse': {
+    'statusCode': 200,
+    'headers': [
+      {
+        'name': 'Content-Type',
+        'values': [
+          'application/json; charset=utf-8'
+        ]
+      }
+    ],
+    'body': '{ "status": "success", "errcode": "", "errmessage": ""  , "_embedded": { "oids": [ {"oid": "1.3.6.1.4.1.8072.100.3.1.1.0", "type": "OctetString", "url": "http://problem-app-mock/data", "jsonpath": "$.noexiste"}\n, {"oid": "1.3.6.1.4.1.8072.100.3.1.2.0", "type": "OctetString", "url": "http://problem-app-mock/noexiste", "jsonpath": "$.hola"}\n, {"oid": "1.3.6.1.4.1.8072.100.3.1.3.0", "type": "Integer", "url": "http://problem-app-mock/data", "jsonpath": "$.not_an_int"}\n, {"oid": "1.3.6.1.4.1.8072.100.3.1.4.0", "type": "OctetString", "url": "http://problem-app-mock/delay1sec", "jsonpath": "$.first"}\n, {"oid": "1.3.6.1.4.1.8072.100.3.1.5.0", "type": "OctetString", "url": "http://problem-app-mock/delay400ms", "jsonpath": "$.first"}\n, {"oid": "1.3.6.1.4.1.8072.100.3.1.6.0", "type": "Counter32", "url": "http://problem-app-mock/data", "jsonpath": "$.negative"}\n, {"oid": "1.3.6.1.4.1.8072.100.3.1.7.0", "type": "Gauge32", "url": "http://problem-app-mock/data", "jsonpath": "$.too_big_int"}\n, {"oid": "1.3.6.1.4.1.8072.100.4.1.7.0", "type": "Gauge32", "url": "http://problem-app-mock/oid_not_in_range", "jsonpath": "$.first"}\n ] } }'
+  },
+   'times': {
+       'unlimited': true
+   }
+}
+

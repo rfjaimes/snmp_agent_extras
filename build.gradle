@@ -1,0 +1,96 @@
+// Grab the plugin from a Maven Repo automatically
+buildscript {
+    repositories {
+        mavenLocal()
+        maven { url 'http://maven.intraway.com/artifactory/maven-releases' }
+        maven {url 'http://maven.intraway.com/maven-development' }
+    }
+    dependencies {
+        classpath 'com.intraway.technology.plugins:iwpackage-gradle-plugin:1.15.1'
+        classpath 'com.intraway.technology.plugins:automation-gradle-plugin:1.10.4'
+        classpath 'com.intraway.technology.plugins.docker:docker-gradle-plugin:1.8.1'
+    }
+	configurations.all {
+		resolutionStrategy {
+			force 'xml-apis:xml-apis:1.4.01'
+		}
+	}
+}
+
+wrapper {
+    gradleVersion = 2.14
+}
+
+apply plugin: 'iwpackage-gradle-plugin'
+apply plugin: 'automation-gradle-plugin'
+apply plugin: 'docker-gradle-plugin'
+
+packaging {
+    // Package name (Optional) [project.name]
+    //name = project.name
+    name = 'iw_sentinel_snmpsubagent'
+
+    // Package version (Optional) [project.version] <PHP projects, version is obtain from composer.json>
+    version = project.version
+
+    appendRevision = true
+
+    // Package description
+    description = 'SNMP <---> API proxy'
+
+    // Package dependencies (Optional) <Array of package dependencies>
+    dependencies = []
+
+    // Build dependencies.
+    buildDependencies = []
+
+    architecture = 'noarch'
+
+    // Package maintainer
+    maintainer = 'technology@intraway.com'
+
+    // Package installation prefix (opt/iway)
+    prefix = 'sentinel/snmp_subagent'
+
+    // Additional 'fpm' flags (Optional) <Array of flags>
+    fpmFlags = ['--rpm-auto-add-directories']
+
+    // Additional 'fpm' options (Optional) <Map containing extra options>
+    fpmOptions = []
+}
+
+dockerbuild {
+    useInternalDns = false
+
+    def properties = new Properties()
+    properties.setProperty("version", project.ext.scmVersion)
+    properties.setProperty("component", project.component)
+    replacements = properties
+}
+
+TestConfiguration {
+	businessUnit = 'Sentinel'
+	product = project.getProperty('product')
+	productVersion = 'x.y.z'
+	owner = 'nicolas.dascanio@intraway.com'
+	component = project.getProperty('component')
+	componentVersion = project.getProperty('version')
+
+	scenarios{
+		"smoke"{
+			//este escenario es para correr el target runSmokeTests
+			jmeterConfig{
+				jmeterTestFiles = [
+                                    'basic/registration.jmx',
+                                    'basic/get.jmx',
+                                    'basic/walk.jmx',
+                                    'basic/problem.jmx',
+                                    'basic/persistence.jmx',
+                                    'basic/registration_with_oids.jmx',
+                                    'basic/registration_oids_vs_discover.jmx'
+
+                                  ]
+			}
+		}
+	}
+}

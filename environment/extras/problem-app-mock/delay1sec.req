@@ -1,0 +1,27 @@
+{
+  'httpRequest': {
+    'method': 'GET',
+    'path': '/delay1sec'
+  },
+  'httpResponse': {
+    'statusCode': 200,
+    'headers': [
+      {
+        'name': 'Content-Type',
+        'values': [
+          'application/json; charset=utf-8'
+        ]
+      }
+    ],
+    'body': '{\n    "first": 1000,\n}',
+
+    'delay': {
+        'timeUnit': 'SECONDS',
+        'value': 1
+    }
+  },
+   'times': {
+       'unlimited': true
+   }
+}
+

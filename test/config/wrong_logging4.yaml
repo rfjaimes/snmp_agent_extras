@@ -1,0 +1,5 @@
+logging:
+  file:
+    level: 'DEBUG'
+    format: 'json'
+    # dir is missing
