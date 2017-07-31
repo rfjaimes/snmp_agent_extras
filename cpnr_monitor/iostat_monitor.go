@@ -6,12 +6,11 @@ import (
 	"syscall"
 	"time"
 
-	"stats"
-
 	"github.com/op/go-logging"
 
 	errgo "gopkg.in/errgo.v1"
 
+	"github.com/elpadrinoIV/iostat_monitor/stats"
 	agentx "github.com/posteo/go-agentx"
 	"github.com/posteo/go-agentx/value"
 )
