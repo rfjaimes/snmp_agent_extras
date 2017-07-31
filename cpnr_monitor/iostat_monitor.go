@@ -10,7 +10,7 @@ import (
 
 	errgo "gopkg.in/errgo.v1"
 
-	"github.com/elpadrinoIV/iostat_monitor/stats"
+	"github.com/rfjaimes/snmp_agent_extras/cpnr_monitor/stats"
 	agentx "github.com/posteo/go-agentx"
 	"github.com/posteo/go-agentx/value"
 )
