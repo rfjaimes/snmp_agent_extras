@@ -1,9 +1,7 @@
 package stats
 
 import (
-	"fmt"
 	"sort"
-	"strconv"
 	"time"
 
 	agentx "github.com/posteo/go-agentx"
@@ -96,82 +94,82 @@ func (self *StatsSNMPHandler) update() {
 
 	sort.Strings(keys)
 
-	for idx, device := range keys {
-		stats_data := stats[device]
-		// device index
-		oid := self.base_oid + ".1." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeInteger, int32(idx + 1)}
+	// for idx, device := range keys {
+	// 	stats_data := stats[device]
+	// 	// device index
+	// 	oid := self.base_oid + ".1." + strconv.Itoa(idx+1)
+	// 	self.oids = append(self.oids, value.MustParseOID(oid))
+	// 	self.items[oid] = agentx.ListItem{pdu.VariableTypeInteger, int32(idx + 1)}
 
-		// device name
-		oid = self.base_oid + ".2." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, device}
+	// 	// device name
+	// 	oid = self.base_oid + ".2." + strconv.Itoa(idx+1)
+	// 	self.oids = append(self.oids, value.MustParseOID(oid))
+	// 	self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, device}
 
-		// rrqm/s
-		oid = self.base_oid + ".3." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Rrqms)}
+	// // rrqm/s
+	// oid = self.base_oid + ".3." + strconv.Itoa(idx+1)
+	// self.oids = append(self.oids, value.MustParseOID(oid))
+	// self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Rrqms)}
 
-		// wrqm/s
-		oid = self.base_oid + ".4." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Wrqms)}
+	// // wrqm/s
+	// oid = self.base_oid + ".4." + strconv.Itoa(idx+1)
+	// self.oids = append(self.oids, value.MustParseOID(oid))
+	// self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Wrqms)}
 
-		// r/s
-		oid = self.base_oid + ".5." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Rs)}
+	// // r/s
+	// oid = self.base_oid + ".5." + strconv.Itoa(idx+1)
+	// self.oids = append(self.oids, value.MustParseOID(oid))
+	// self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Rs)}
 
-		// w/s
-		oid = self.base_oid + ".6." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Ws)}
+	// // w/s
+	// oid = self.base_oid + ".6." + strconv.Itoa(idx+1)
+	// self.oids = append(self.oids, value.MustParseOID(oid))
+	// self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Ws)}
 
-		// rkB/s
-		oid = self.base_oid + ".7." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Rkbs)}
+	// // rkB/s
+	// oid = self.base_oid + ".7." + strconv.Itoa(idx+1)
+	// self.oids = append(self.oids, value.MustParseOID(oid))
+	// self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Rkbs)}
 
-		// wkB/s
-		oid = self.base_oid + ".8." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Wkbs)}
+	// // wkB/s
+	// oid = self.base_oid + ".8." + strconv.Itoa(idx+1)
+	// self.oids = append(self.oids, value.MustParseOID(oid))
+	// self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Wkbs)}
 
-		// avgrq-sz
-		oid = self.base_oid + ".9." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Avgrqsz)}
+	// // avgrq-sz
+	// oid = self.base_oid + ".9." + strconv.Itoa(idx+1)
+	// self.oids = append(self.oids, value.MustParseOID(oid))
+	// self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Avgrqsz)}
 
-		// avgqu-sz
-		oid = self.base_oid + ".10." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Avgqusz)}
+	// // avgqu-sz
+	// oid = self.base_oid + ".10." + strconv.Itoa(idx+1)
+	// self.oids = append(self.oids, value.MustParseOID(oid))
+	// self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Avgqusz)}
 
-		// await
-		oid = self.base_oid + ".11." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Await)}
+	// // await
+	// oid = self.base_oid + ".11." + strconv.Itoa(idx+1)
+	// self.oids = append(self.oids, value.MustParseOID(oid))
+	// self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Await)}
 
-		// r_await
-		oid = self.base_oid + ".12." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Rawait)}
+	// // r_await
+	// oid = self.base_oid + ".12." + strconv.Itoa(idx+1)
+	// self.oids = append(self.oids, value.MustParseOID(oid))
+	// self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Rawait)}
 
-		// w_await
-		oid = self.base_oid + ".13." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Wawait)}
+	// // w_await
+	// oid = self.base_oid + ".13." + strconv.Itoa(idx+1)
+	// self.oids = append(self.oids, value.MustParseOID(oid))
+	// self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Wawait)}
 
-		// svctm
-		oid = self.base_oid + ".14." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Svctm)}
+	// // svctm
+	// oid = self.base_oid + ".14." + strconv.Itoa(idx+1)
+	// self.oids = append(self.oids, value.MustParseOID(oid))
+	// self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Svctm)}
 
-		// %util
-		oid = self.base_oid + ".15." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Util)}
-	}
+	// // %util
+	// oid = self.base_oid + ".15." + strconv.Itoa(idx+1)
+	// self.oids = append(self.oids, value.MustParseOID(oid))
+	// self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, fmt.Sprintf("%.2f", stats_data.Util)}
+	//}
 	sort.Sort(OIDSorter(self.oids))
 }
