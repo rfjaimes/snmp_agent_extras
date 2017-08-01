@@ -10,9 +10,9 @@ import (
 
 	errgo "gopkg.in/errgo.v1"
 
-	"github.com/rfjaimes/snmp_agent_extras/cpnr_monitor/stats"
 	agentx "github.com/posteo/go-agentx"
 	"github.com/posteo/go-agentx/value"
+	"github.com/rfjaimes/snmp_agent_extras/cpnr_monitor/stats"
 )
 
 var log = logging.MustGetLogger("iostat_monitor")
@@ -44,9 +44,9 @@ func main() {
 	}
 
 	sm := stats.NewStatsManager()
-	sm.Run(5, 10)
+	sm.Run(60)
 
-	base_oid := "1.3.6.1.3.1"
+	base_oid := "1.3.6.1.4.1.25934.128.1.11.1.1"
 
 	stats_handler := stats.NewStatsSNMPHandler(sm, base_oid)
 
@@ -62,12 +62,3 @@ func main() {
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	<-sigs
 }
-
-// 1.3.6.1.3.1
-// 1.3.6.1.3.1.1.1 = 1
-// 1.3.6.1.3.1.2.1 = 'sda'
-// 1.3.6.1.3.1.3.1 = RRQM/s
-// ...
-// 1.3.6.1.3.1.1.2 = 2
-// 1.3.6.1.3.1.2.2 = 'dm-0'
-// 1.3.6.1.3.1.3.2 = RRQM/s
