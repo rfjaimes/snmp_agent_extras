@@ -15,14 +15,14 @@ import (
 var log = logging.MustGetLogger("iostat_monitor")
 
 type StatsData struct {
-	ServType         string
+	ServType         int
 	ServName         string
 	ServAddr         string
-	ServReqs         string
-	ServComms        string
-	ServState        string
-	ServPartnerRole  string
-	ServPartnerState string
+	ServReqs         int
+	ServComms        int
+	ServState        int
+	ServPartnerRole  int
+	ServPartnerState int
 }
 
 type DataEnum map[string]int
@@ -68,10 +68,12 @@ func (self *StatsManager) LastUpdated() time.Time {
 func (self *StatsManager) ParseValues(index int, value string) int64 {
 	var data int64 = 255
 	if typeEnum, ok := self.data_enums[index]; ok {
-		data = int64(typeEnum[value])
+		if valueEnum, ok := typeEnum[value]; ok {
+			data = int64(valueEnum)
+		}
 	} else {
 		dEnum, err := strconv.Atoi(value)
-		if err != nil {
+		if err == nil {
 			data = int64(dEnum)
 		}
 	}
@@ -87,13 +89,19 @@ func (self *StatsManager) Load(data string) error {
 		if strings.Contains(line, ";") {
 			stats := StatsData{}
 
-			values := strings.Split(data, ";")
+			values := strings.Split(line, ";")
 
 			stats_r := reflect.ValueOf(&stats).Elem()
 
 			for i := 1; i <= 8; i++ {
-				valueEnum := self.ParseValues(i, values[i-1])
-				stats_r.Field(i - 1).SetInt(valueEnum)
+
+				if stats_r.Field(i-1).Type() != reflect.TypeOf("") {
+					valueEnum := self.ParseValues(i, strings.ToLower(values[i-1]))
+					stats_r.Field(i - 1).SetInt(valueEnum)
+				} else {
+					stats_r.Field(i - 1).SetString(values[i-1])
+				}
+
 			}
 
 			idxStr := fmt.Sprintf("%d", idx)
