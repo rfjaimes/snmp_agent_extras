@@ -130,12 +130,14 @@ func (self *StatsManager) Run(interval_exec uint) {
 }
 
 func (self *StatsManager) Execute() {
-	out, err := exec.Command("bash", "-c", `nrcmd -N admin -P changeme -r "dhcp getRelatedServers column-separator=\|" | \
+	nrcmd := `nrcmd -N admin -P changeme -r "dhcp getRelatedServers column-separator=\|" | \
     egrep '^MAIN|^BACKUP|^DNS' | \
     awk 'function ltrim(s) { sub(/^[ \t\r\n]+/, "", s); return s }
 function rtrim(s) { sub(/[ \t\r\n]+$/, "", s); return s }
 function trim(s) { return rtrim(ltrim(s)); }
-BEGIN{FS="|"}{print trim($1)";"trim($2)";"trim($3)";"trim($4)";"trim($5)";"trim($6)";"trim($7)";"trim($8)}'`)
+BEGIN{FS="|"}{print trim($1)";"trim($2)";"trim($3)";"trim($4)";"trim($5)";"trim($6)";"trim($7)";"trim($8)}'`
+
+	out, err := exec.Command("bash", "-c", nrcmd).Output()
 
 	//     out := `BACKUP;iw-cnr1-2.libertypr.com;10.229.198.25;0;OK;NORMAL;BACKUP;NORMAL
 	// BACKUP;iw-cnr1-3.libertypr.com;10.229.198.26;0;INTERRUPTED;RECOVER;MAIN;COMMUNICATION-INTERRUPTED
@@ -144,7 +146,7 @@ BEGIN{FS="|"}{print trim($1)";"trim($2)";"trim($3)";"trim($4)";"trim($5)";"trim(
 	// DNS;iway-backend-02;10.10.35.134;0;NONE;PROBE;HA-BACKUP;--`
 
 	if err == nil {
-		if err := self.Load(out); err != nil {
+		if err := self.Load(string(out)); err != nil {
 			log.Warning("Couldn't load stats:", err)
 		} else {
 			log.Debug("Stats updated")
