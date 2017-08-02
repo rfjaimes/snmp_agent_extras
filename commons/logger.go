@@ -21,6 +21,10 @@ func SetBasicLogger() {
 	logging.SetBackend(stdout_backend)
 }
 
+func GetLogger(module string) *logging.Logger {
+	return log
+}
+
 func ResetLogging(config Config) {
 	backends := make([]logging.Backend, 0)
 	for log_appender, log_appender_info := range config.Logging {
