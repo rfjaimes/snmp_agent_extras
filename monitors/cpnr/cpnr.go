@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"os"
 	"os/signal"
 	"syscall"
@@ -8,10 +9,10 @@ import (
 
 	errgo "gopkg.in/errgo.v1"
 
-	"github.com/elpadrinoIV/iostat_monitor/stats"
 	agentx "github.com/posteo/go-agentx"
 	"github.com/posteo/go-agentx/value"
 	"github.com/rfjaimes/snmp_agent_extras/commons"
+	"github.com/rfjaimes/snmp_agent_extras/monitors/cpnr/stats"
 )
 
 var log = commons.GetLogger()
@@ -20,6 +21,16 @@ func main() {
 
 	commons.SetBasicLogger()
 	log.Info("Starting CPRN snmp subagent")
+
+	config_flag := flag.String("config", "../../conf/config.yaml.in", "Path to config file")
+	flag.Parse()
+
+	config, err := commons.LoadConfig(*config_flag)
+	if err != nil {
+		log.Fatalf("Error loading config file: %v", err)
+	}
+
+	commons.ResetLogging(config)
 
 	client := &agentx.Client{
 		Net:               "tcp",
