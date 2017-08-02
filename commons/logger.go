@@ -4,7 +4,6 @@ import (
 	"os"
 
 	logging "github.com/op/go-logging"
-	"github.com/rfjaimes/snmp_agent_extras/commons"
 )
 
 var log = logging.MustGetLogger("sentinel-snmp-subagent")
@@ -22,7 +21,7 @@ func SetBasicLogger() {
 	logging.SetBackend(stdout_backend)
 }
 
-func ResetLogging(config commons.Config) {
+func ResetLogging(config Config) {
 	backends := make([]logging.Backend, 0)
 	for log_appender, log_appender_info := range config.Logging {
 		format := plain_format
