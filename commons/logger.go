@@ -21,7 +21,7 @@ func SetBasicLogger() {
 	logging.SetBackend(stdout_backend)
 }
 
-func GetLogger(module string) *logging.Logger {
+func GetLogger() *logging.Logger {
 	return log
 }
 
