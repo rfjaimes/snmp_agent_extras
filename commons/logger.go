@@ -1,10 +1,9 @@
-package main
+package commons
 
 import (
 	"os"
 
 	logging "github.com/op/go-logging"
-	"gitlab.intraway.com/sentinel/sentinel-snmp-subagent/commons"
 )
 
 var log = logging.MustGetLogger("sentinel-snmp-subagent")

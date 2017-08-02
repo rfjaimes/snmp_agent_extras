@@ -1,4 +1,4 @@
-package snmp_subagent
+package commons
 
 import (
 	"reflect"
