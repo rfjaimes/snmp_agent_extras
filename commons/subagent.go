@@ -5,7 +5,6 @@ import (
 
 	errgo "gopkg.in/errgo.v1"
 
-	"github.com/elpadrinoIV/iostat_monitor/stats"
 	agentx "github.com/posteo/go-agentx"
 	"github.com/posteo/go-agentx/value"
 )
@@ -27,7 +26,7 @@ func StartSubAgent(config Config) {
 
 }
 
-func RegisterSubAgent(base_oid string, stats_handler *stats.StatsSNMPHandler) {
+func RegisterSubAgent(base_oid string, stats_handler agentx.Handler) {
 
 	session, err := client.Session()
 	if err != nil {
