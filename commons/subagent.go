@@ -11,7 +11,6 @@ import (
 
 	agentx "github.com/posteo/go-agentx"
 	"github.com/posteo/go-agentx/value"
-	"github.com/rfjaimes/snmp_agent_extras/commons"
 	"github.com/rfjaimes/snmp_agent_extras/monitors/cpnr/stats"
 )
 
