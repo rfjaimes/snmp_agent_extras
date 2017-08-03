@@ -7,7 +7,6 @@ import (
 	"syscall"
 
 	"github.com/rfjaimes/snmp_agent_extras/commons"
-	"github.com/rfjaimes/snmp_agent_extras/monitors/cpnr/stats"
 )
 
 var log = commons.GetLogger()
@@ -29,12 +28,12 @@ func main() {
 
 	commons.StartSubAgent(config)
 
-	sm := stats.NewStatsManager()
+	sm := NewStatsManager()
 	sm.Run(60)
 
-	base_oid := "1.3.6.1.4.1.25934.128.1.11.1.1"
+	base_oid := "1.3.6.1.4.1.25934.128.4.11.1.1.1"
 
-	stats_handler := stats.NewStatsSNMPHandler(sm, base_oid)
+	stats_handler := NewStatsSNMPHandler(sm, base_oid)
 
 	commons.RegisterSubAgent(base_oid, stats_handler)
 
