@@ -1,22 +1,16 @@
 package commons
 
 import (
-	"flag"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	errgo "gopkg.in/errgo.v1"
 
+	"github.com/elpadrinoIV/iostat_monitor/stats"
 	agentx "github.com/posteo/go-agentx"
 	"github.com/posteo/go-agentx/value"
-	"github.com/rfjaimes/snmp_agent_extras/monitors/cpnr/stats"
 )
 
-var client Client
-var session *Session
-
+var client *agentx.Client
 
 func StartSubAgent(config Config) {
 
@@ -31,13 +25,14 @@ func StartSubAgent(config Config) {
 		log.Fatalf(errgo.Details(err))
 	}
 
+}
+
+func RegisterSubAgent(base_oid string, stats_handler *stats.StatsSNMPHandler) {
+
 	session, err := client.Session()
 	if err != nil {
 		log.Fatalf(errgo.Details(err))
 	}
-}
-
-func RegisterSubAgent(base_oid string, stats_handler *StatsSNMPHandler)
 
 	session.Handler = stats_handler
 
