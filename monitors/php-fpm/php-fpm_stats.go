@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"reflect"
 	"strconv"
 	"strings"
 	"sync"
@@ -12,14 +11,9 @@ import (
 )
 
 type StatsData struct {
-	ServType         int
-	ServName         string
-	ServAddr         string
-	ServReqs         int
-	ServComms        int
-	ServState        int
-	ServPartnerRole  int
-	ServPartnerState int
+	FPM   map[string]map[string]DataOID
+	Pool  map[string]map[string]DataOID
+	Procs map[string]map[string]DataOID
 }
 
 type DataOID struct {
@@ -27,6 +21,8 @@ type DataOID struct {
 	Type  pdu.VariableType
 	Value string
 }
+
+type DataEnum map[string]int
 
 func (self *DataOID) CloneDataOID() *DataOID {
 	if self == nil {
@@ -41,15 +37,15 @@ func (self *DataOID) CloneDataOID() *DataOID {
 	}
 }
 
-func CloneMapStas(mapStats map[string]DataOID) *map[string]DataOID {
+func CloneMapStats(mapStats map[string]DataOID) *map[string]DataOID {
 	if mapStats == nil {
 		return nil
 	} else {
 		cloneMapStats := map[string]DataOID{}
 		for k, v := range mapStats {
-			cloneMapStats[k] = v.CloneDataOID()
+			cloneMapStats[k] = *v.CloneDataOID()
 		}
-		return cloneMapStats
+		return &cloneMapStats
 	}
 }
 
@@ -96,13 +92,12 @@ var StatsProcs = map[string]DataOID{
 	"last_request_memory": DataOID{13, pdu.VariableTypeCounter32, "0"},
 }
 
-type DataEnum map[string]int
-
 type StatsManager struct {
 	last_updated time.Time
 	stats        map[string]StatsData
 	mutex        *sync.Mutex
-	data_enums   map[int]DataEnum
+	data_enums   map[string]DataEnum
+	serversCount int
 }
 
 func NewStatsManager() *StatsManager {
@@ -110,13 +105,12 @@ func NewStatsManager() *StatsManager {
 	sm.last_updated = time.Unix(1, 1)
 	sm.stats = make(map[string]StatsData)
 	sm.mutex = &sync.Mutex{}
+	sm.serversCount = 0
 
-	sm.data_enums = map[int]DataEnum{
-		1: DataEnum{"main": 1, "backup": 2, "dns": 3},
-		5: DataEnum{"ok": 1, "interrupted": 2, "none": 3},
-		6: DataEnum{"normal": 1, "recover": 2, "recover-done": 3, "partner-down": 4, "send-update": 5, "probe": 6},
-		7: DataEnum{"main": 1, "backup": 2, "standalone": 3, "ha-main": 4, "ha-backup": 5},
-		8: DataEnum{"normal": 1, "partner-down": 4, "communication-interrupted": 7, "paused": 8},
+	sm.data_enums = map[string]DataEnum{
+		"2.1.3": DataEnum{"ipv4": 1, "ipv6": 2, "ipv46": 3, "unixSocket": 4},
+		"2.1.7": DataEnum{"static": 1, "dynamic": 2, "onDemand": 3},
+		"3.1.2": DataEnum{"idle": 1, "running": 2},
 	}
 
 	return sm
@@ -136,8 +130,9 @@ func (self *StatsManager) LastUpdated() time.Time {
 	return lu
 }
 
-func (self *StatsManager) ParseValues(index int, value string) int64 {
+func (self *StatsManager) ParseValues(index string, value string) (v int64, err error) {
 	var data int64 = 255
+
 	if typeEnum, ok := self.data_enums[index]; ok {
 		if valueEnum, ok := typeEnum[value]; ok {
 			data = int64(valueEnum)
@@ -149,45 +144,76 @@ func (self *StatsManager) ParseValues(index int, value string) int64 {
 		}
 	}
 
-	return data
+	return data, err
 }
 
-func (self *StatsManager) Load(data string) error {
+func (self *StatsManager) Load(serverCount int, data string) error {
+	//new_stats := make(map[string]StatsData)
+
+	svrCntIdx := strconv.Itoa(serverCount)
+
 	blocks := strings.Split(data, "************************\n")
 
-	new_stats := make(map[string]StatsData)
+	stats := StatsData{}
+
+	stats.Pool = make(map[string]map[string]DataOID)
+	stats.Pool[svrCntIdx] = *CloneMapStats(StatsPool)
+
+	stats.Procs = make(map[string]map[string]DataOID)
+	stats.Procs[svrCntIdx] = *CloneMapStats(StatsProcs)
+
+	var k, v string
+
+	var countPools, countProcs int
+	countPools = 0
+	countProcs = 0
 
 	for block_idx, block := range blocks {
 		lines := strings.Split(block, "\n")
-		for line_idx, line := range lines {
+
+		if block_idx == 0 {
+			countPools++
+		} else {
+			countProcs++
+		}
+		for _, line := range lines {
 			line = strings.TrimSpace(line)
 			if strings.Contains(line, ":") {
-				stats := StatsData{}
-
 				values := strings.Split(line, ":")
+				k = strings.Replace(strings.TrimSpace(values[0]), " ", "_", -1)
+				v = strings.TrimSpace(values[1])
 
-				stats_r := reflect.ValueOf(&stats).Elem()
+				if block_idx == 0 {
+					if dataOid, ok := stats.Pool[svrCntIdx][k]; ok {
+						dataOid.Value = v
+						stats.Pool[svrCntIdx][k] = dataOid
 
-				for i := 1; i <= 8; i++ {
-
-					if stats_r.Field(i-1).Type() != reflect.TypeOf("") {
-						valueEnum := self.ParseValues(i, strings.ToLower(values[i-1]))
-						stats_r.Field(i - 1).SetInt(valueEnum)
+						idxStr := fmt.Sprintf("%d.%d.%d", serverCount, countProcs, dataOid.Index)
+						log.Info("report oid %s", idxStr)
 					} else {
-						stats_r.Field(i - 1).SetString(values[i-1])
+						log.Warning("key not found in Pool: %s", k)
+					}
+
+				} else {
+					if dataOid, ok := stats.Procs[svrCntIdx][k]; ok {
+						dataOid.Value = v
+						stats.Procs[svrCntIdx][k] = dataOid
+
+						idxStr := fmt.Sprintf("%d.%d.%d", serverCount, countProcs, dataOid.Index)
+						log.Info("report oid %s", idxStr)
+					} else {
+						log.Warning("key not found in Procs: %s", k)
 					}
 
 				}
 
-				idxStr := fmt.Sprintf("%d.%d", block_idx, line_idx)
-				new_stats[idxStr] = stats
 			}
 
 		}
 	}
 
 	self.mutex.Lock()
-	self.stats = new_stats
+	self.stats[svrCntIdx] = stats
 	self.last_updated = time.Now()
 	self.mutex.Unlock()
 	return nil
@@ -301,7 +327,7 @@ last request cpu:     0.00
 last request memory:  0`
 
 	if true {
-		if err := self.Load(string(out)); err != nil {
+		if err := self.Load(1, string(out)); err != nil {
 			log.Warning("Couldn't load stats:", err)
 		} else {
 			log.Debug("Stats updated")

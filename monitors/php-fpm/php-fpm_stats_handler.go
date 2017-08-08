@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net"
 	"sort"
 	"strconv"
 	"time"
@@ -85,65 +86,64 @@ func (self *StatsSNMPHandler) update() {
 		return
 	}
 
-	stats := self.stats_manager.Stats()
+	dataStats := self.stats_manager.Stats()
 
-	keys := make([]string, len(stats))
+	keys := make([]string, len(dataStats))
 	i := 0
-	for k := range stats {
+	for k := range dataStats {
 		keys[i] = k
 		i++
 	}
 
 	sort.Strings(keys)
 
-	for idx, device := range keys {
-		stats_data := stats[device]
-		// Server index
-		oid := self.base_oid + ".1." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeInteger, int32(idx + 1)}
+	for svr_idx, device := range keys {
+		stats_data := dataStats[device]
 
-		// Server Type
-		oid = self.base_oid + ".2." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeInteger, int32(stats_data.ServType)}
+		for pool_idx, pool := range stats_data.Pool {
 
-		// Server Name
-		oid = self.base_oid + ".3." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, stats_data.ServName}
+			for _, dataOid := range pool {
+				oid := self.base_oid + ".2.1." + strconv.Itoa(dataOid.Index) + "." + strconv.Itoa(svr_idx+1) + "." + pool_idx
+				self.oids = append(self.oids, value.MustParseOID(oid))
 
-		// Server Addr
-		oid = self.base_oid + ".4." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeOctetString, stats_data.ServAddr}
+				var oidValue interface{}
 
-		// Server Reqs
-		oid = self.base_oid + ".5." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeInteger, int32(stats_data.ServReqs)}
+				switch dataOid.Type {
+				case pdu.VariableTypeInteger:
+					if valueOid, err := self.stats_manager.ParseValues("2.1."+strconv.Itoa(dataOid.Index), dataOid.Value); err == nil {
+						oidValue = int32(valueOid)
+					}
+				case pdu.VariableTypeOctetString:
+					oidValue = dataOid.Value
+				case pdu.VariableTypeObjectIdentifier:
+					oidValue = dataOid.Value
+				case pdu.VariableTypeIPAddress:
+					oidValue = net.IP{10, 10, 10, 10}
+				case pdu.VariableTypeCounter32:
+					if valueOid, err := strconv.ParseInt(dataOid.Value, 10, 64); err == nil {
+						oidValue = uint32(valueOid)
+					}
+				case pdu.VariableTypeGauge32:
+					if valueOid, err := strconv.ParseInt(dataOid.Value, 10, 64); err == nil {
+						oidValue = uint32(valueOid)
+					}
+				case pdu.VariableTypeTimeTicks:
+					if valueOid, err := strconv.ParseInt(dataOid.Value, 10, 64); err == nil {
+						oidValue = int64(valueOid) * time.Second
+					}
+				case pdu.VariableTypeCounter64:
+					if valueOid, err := strconv.ParseInt(dataOid.Value, 10, 64); err == nil {
+						oidValue = uint64(valueOid)
+					}
+				}
 
-		// Server Comms
-		oid = self.base_oid + ".6." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeInteger, int32(stats_data.ServComms)}
+				self.items[oid] = agentx.ListItem{dataOid.Type, oidValue}
 
-		// Server State
-		oid = self.base_oid + ".7." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeInteger, int32(stats_data.ServState)}
-
-		// Server PartnerRole
-		oid = self.base_oid + ".8." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeInteger, int32(stats_data.ServPartnerRole)}
-
-		// Server PartnerState
-		oid = self.base_oid + ".9." + strconv.Itoa(idx+1)
-		self.oids = append(self.oids, value.MustParseOID(oid))
-		self.items[oid] = agentx.ListItem{pdu.VariableTypeInteger, int32(stats_data.ServPartnerState)}
+				log.Info("report oid %s : %s", oid, dataOid.Value)
+			}
+		}
 
 	}
 
-	//sort.Sort(stats.OIDSorter(self.oids))
+	sort.Sort(stats.OIDSorter(self.oids))
 }

@@ -31,7 +31,7 @@ func main() {
 	sm := NewStatsManager()
 	sm.Run(60)
 
-	base_oid := "1.3.6.1.4.1.25934.128.4.11.1.1.1"
+	base_oid := "1.3.6.1.4.1.25934.128.4.11"
 
 	stats_handler := NewStatsSNMPHandler(sm, base_oid)
 
