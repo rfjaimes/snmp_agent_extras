@@ -1,7 +1,6 @@
 package main
 
 import (
-	"net"
 	"sort"
 	"strconv"
 	"time"
@@ -100,49 +99,29 @@ func (self *StatsSNMPHandler) update() {
 	for svr_idx, device := range keys {
 		stats_data := dataStats[device]
 
-		for pool_idx, pool := range stats_data.Pool {
+		for pool_idx, pool := range stats_data.Pools {
 
 			for _, dataOid := range pool {
 				oid := self.base_oid + ".2.1." + strconv.Itoa(dataOid.Index) + "." + strconv.Itoa(svr_idx+1) + "." + pool_idx
 				self.oids = append(self.oids, value.MustParseOID(oid))
 
-				var oidValue interface{}
+				self.items[oid] = agentx.ListItem{dataOid.Type, dataOid.getOIDValue()}
 
-				switch dataOid.Type {
-				case pdu.VariableTypeInteger:
-					if valueOid, err := self.stats_manager.ParseValues("2.1."+strconv.Itoa(dataOid.Index), dataOid.Value); err == nil {
-						oidValue = int32(valueOid)
-					}
-				case pdu.VariableTypeOctetString:
-					oidValue = dataOid.Value
-				case pdu.VariableTypeObjectIdentifier:
-					oidValue = dataOid.Value
-				case pdu.VariableTypeIPAddress:
-					oidValue = net.IP{10, 10, 10, 10}
-				case pdu.VariableTypeCounter32:
-					if valueOid, err := strconv.ParseInt(dataOid.Value, 10, 64); err == nil {
-						oidValue = uint32(valueOid)
-					}
-				case pdu.VariableTypeGauge32:
-					if valueOid, err := strconv.ParseInt(dataOid.Value, 10, 64); err == nil {
-						oidValue = uint32(valueOid)
-					}
-				case pdu.VariableTypeTimeTicks:
-					if valueOid, err := strconv.ParseInt(dataOid.Value, 10, 64); err == nil {
-						oidValue = int64(valueOid) * time.Second
-					}
-				case pdu.VariableTypeCounter64:
-					if valueOid, err := strconv.ParseInt(dataOid.Value, 10, 64); err == nil {
-						oidValue = uint64(valueOid)
-					}
-				}
-
-				self.items[oid] = agentx.ListItem{dataOid.Type, oidValue}
-
-				log.Info("report oid %s : %s", oid, dataOid.Value)
+				log.Infof("write oid %s : %s", oid, dataOid.Value)
 			}
 		}
 
+		for proc_idx, proc := range stats_data.Procs {
+
+			for _, dataOid := range proc {
+				oid := self.base_oid + ".3.1." + strconv.Itoa(dataOid.Index) + "." + strconv.Itoa(svr_idx+1) + "." + proc_idx
+				self.oids = append(self.oids, value.MustParseOID(oid))
+
+				self.items[oid] = agentx.ListItem{dataOid.Type, dataOid.getOIDValue()}
+
+				log.Infof("write oid %s : %s", oid, dataOid.Value)
+			}
+		}
 	}
 
 	sort.Sort(stats.OIDSorter(self.oids))

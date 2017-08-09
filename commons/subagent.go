@@ -13,7 +13,7 @@ var client *agentx.Client
 
 func StartSubAgent(config Config) {
 
-	client := &agentx.Client{
+	client = &agentx.Client{
 		Net:               config.AgentXProtocol,
 		Address:           config.AgentXAddress,
 		Timeout:           1 * time.Minute,

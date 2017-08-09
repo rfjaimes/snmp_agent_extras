@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"strconv"
 	"strings"
 	"sync"
@@ -12,7 +13,7 @@ import (
 
 type StatsData struct {
 	FPM   map[string]map[string]DataOID
-	Pool  map[string]map[string]DataOID
+	Pools map[string]map[string]DataOID
 	Procs map[string]map[string]DataOID
 }
 
@@ -35,6 +36,62 @@ func (self *DataOID) CloneDataOID() *DataOID {
 		}
 		return cloneDataOid
 	}
+}
+
+var dataEnums = map[string]DataEnum{
+	"2.1.3": DataEnum{"ipv4": 1, "ipv6": 2, "ipv46": 3, "unixSocket": 4},
+	"2.1.7": DataEnum{"static": 1, "dynamic": 2, "onDemand": 3},
+	"3.1.2": DataEnum{"idle": 1, "running": 2},
+}
+
+func (self *DataOID) ParseValue(index string, value string) (v int64, err error) {
+	var data int64 = 255
+
+	if typeEnum, ok := dataEnums[index]; ok {
+		if valueEnum, ok := typeEnum[value]; ok {
+			data = int64(valueEnum)
+		}
+	} else {
+		dEnum, err := strconv.Atoi(value)
+		if err == nil {
+			data = int64(dEnum)
+		}
+	}
+
+	return data, err
+}
+
+func (self *DataOID) getOIDValue() interface{} {
+	var oidValue interface{}
+	switch self.Type {
+	case pdu.VariableTypeInteger:
+		if valueOid, err := self.ParseValue("2.1."+strconv.Itoa(self.Index), self.Value); err == nil {
+			oidValue = int32(valueOid)
+		}
+	case pdu.VariableTypeOctetString:
+		oidValue = self.Value
+	case pdu.VariableTypeObjectIdentifier:
+		oidValue = self.Value
+	case pdu.VariableTypeIPAddress:
+		oidValue = net.IP{10, 10, 10, 10}
+	case pdu.VariableTypeCounter32:
+		if valueOid, err := strconv.ParseInt(self.Value, 10, 64); err == nil {
+			oidValue = uint32(valueOid)
+		}
+	case pdu.VariableTypeGauge32:
+		if valueOid, err := strconv.ParseInt(self.Value, 10, 64); err == nil {
+			oidValue = uint32(valueOid)
+		}
+	case pdu.VariableTypeTimeTicks:
+		if valueOid, err := strconv.ParseInt(self.Value, 10, 64); err == nil {
+			oidValue = time.Duration(valueOid) * time.Second
+		}
+	case pdu.VariableTypeCounter64:
+		if valueOid, err := strconv.ParseInt(self.Value, 10, 64); err == nil {
+			oidValue = uint64(valueOid)
+		}
+	}
+	return oidValue
 }
 
 func CloneMapStats(mapStats map[string]DataOID) *map[string]DataOID {
@@ -107,12 +164,6 @@ func NewStatsManager() *StatsManager {
 	sm.mutex = &sync.Mutex{}
 	sm.serversCount = 0
 
-	sm.data_enums = map[string]DataEnum{
-		"2.1.3": DataEnum{"ipv4": 1, "ipv6": 2, "ipv46": 3, "unixSocket": 4},
-		"2.1.7": DataEnum{"static": 1, "dynamic": 2, "onDemand": 3},
-		"3.1.2": DataEnum{"idle": 1, "running": 2},
-	}
-
 	return sm
 }
 
@@ -130,23 +181,6 @@ func (self *StatsManager) LastUpdated() time.Time {
 	return lu
 }
 
-func (self *StatsManager) ParseValues(index string, value string) (v int64, err error) {
-	var data int64 = 255
-
-	if typeEnum, ok := self.data_enums[index]; ok {
-		if valueEnum, ok := typeEnum[value]; ok {
-			data = int64(valueEnum)
-		}
-	} else {
-		dEnum, err := strconv.Atoi(value)
-		if err == nil {
-			data = int64(dEnum)
-		}
-	}
-
-	return data, err
-}
-
 func (self *StatsManager) Load(serverCount int, data string) error {
 	//new_stats := make(map[string]StatsData)
 
@@ -156,13 +190,11 @@ func (self *StatsManager) Load(serverCount int, data string) error {
 
 	stats := StatsData{}
 
-	stats.Pool = make(map[string]map[string]DataOID)
-	stats.Pool[svrCntIdx] = *CloneMapStats(StatsPool)
-
+	stats.FPM = make(map[string]map[string]DataOID)
+	stats.Pools = make(map[string]map[string]DataOID)
 	stats.Procs = make(map[string]map[string]DataOID)
-	stats.Procs[svrCntIdx] = *CloneMapStats(StatsProcs)
 
-	var k, v string
+	var k, v, strCountPools, strCountProcs string
 
 	var countPools, countProcs int
 	countPools = 0
@@ -173,8 +205,13 @@ func (self *StatsManager) Load(serverCount int, data string) error {
 
 		if block_idx == 0 {
 			countPools++
+			strCountPools = strconv.Itoa(countPools)
+			stats.Pools[strCountPools] = *CloneMapStats(StatsPool)
+
 		} else {
 			countProcs++
+			strCountProcs = strconv.Itoa(countProcs)
+			stats.Procs[strCountProcs] = *CloneMapStats(StatsProcs)
 		}
 		for _, line := range lines {
 			line = strings.TrimSpace(line)
@@ -184,25 +221,25 @@ func (self *StatsManager) Load(serverCount int, data string) error {
 				v = strings.TrimSpace(values[1])
 
 				if block_idx == 0 {
-					if dataOid, ok := stats.Pool[svrCntIdx][k]; ok {
+					if dataOid, ok := stats.Pools[strCountPools][k]; ok {
 						dataOid.Value = v
-						stats.Pool[svrCntIdx][k] = dataOid
+						stats.Pools[strCountPools][k] = dataOid
 
-						idxStr := fmt.Sprintf("%d.%d.%d", serverCount, countProcs, dataOid.Index)
-						log.Info("report oid %s", idxStr)
+						idxStr := fmt.Sprintf("%d.%d.%d", serverCount, countPools, dataOid.Index)
+						log.Infof("read oid %s", idxStr)
 					} else {
-						log.Warning("key not found in Pool: %s", k)
+						log.Warningf("key not found in Pool: %s", k)
 					}
 
 				} else {
-					if dataOid, ok := stats.Procs[svrCntIdx][k]; ok {
+					if dataOid, ok := stats.Procs[strCountProcs][k]; ok {
 						dataOid.Value = v
-						stats.Procs[svrCntIdx][k] = dataOid
+						stats.Procs[strCountProcs][k] = dataOid
 
 						idxStr := fmt.Sprintf("%d.%d.%d", serverCount, countProcs, dataOid.Index)
-						log.Info("report oid %s", idxStr)
+						log.Infof("read oid %s", idxStr)
 					} else {
-						log.Warning("key not found in Procs: %s", k)
+						log.Warningf("key not found in Procs: %s", k)
 					}
 
 				}
