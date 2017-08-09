@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
@@ -18,7 +19,7 @@ type StatsData struct {
 }
 
 type DataOID struct {
-	Index int
+	Index string
 	Type  pdu.VariableType
 	Value string
 }
@@ -39,8 +40,8 @@ func (self *DataOID) CloneDataOID() *DataOID {
 }
 
 var dataEnums = map[string]DataEnum{
-	"2.1.3": DataEnum{"ipv4": 1, "ipv6": 2, "ipv46": 3, "unixSocket": 4},
-	"2.1.7": DataEnum{"static": 1, "dynamic": 2, "onDemand": 3},
+	"2.1.3": DataEnum{"ipv4": 1, "ipv6": 2, "ipv46": 3, "unixsocket": 4},
+	"2.1.7": DataEnum{"static": 1, "dynamic": 2, "ondemand": 3},
 	"3.1.2": DataEnum{"idle": 1, "running": 2},
 }
 
@@ -65,7 +66,7 @@ func (self *DataOID) getOIDValue() interface{} {
 	var oidValue interface{}
 	switch self.Type {
 	case pdu.VariableTypeInteger:
-		if valueOid, err := self.ParseValue("2.1."+strconv.Itoa(self.Index), self.Value); err == nil {
+		if valueOid, err := self.ParseValue(self.Index, strings.ToLower(self.Value)); err == nil {
 			oidValue = int32(valueOid)
 		}
 	case pdu.VariableTypeOctetString:
@@ -107,46 +108,46 @@ func CloneMapStats(mapStats map[string]DataOID) *map[string]DataOID {
 }
 
 var StatsFPM = map[string]DataOID{
-	"master_index":   DataOID{1, pdu.VariableTypeInteger, "0"},
-	"master_version": DataOID{2, pdu.VariableTypeOctetString, ""},
+	"master_index":   DataOID{"1.1.1", pdu.VariableTypeInteger, "0"},
+	"master_version": DataOID{"1.1.2", pdu.VariableTypeOctetString, ""},
 }
 
 var StatsPool = map[string]DataOID{
-	"index":                DataOID{1, pdu.VariableTypeInteger, "0"},
-	"pool":                 DataOID{2, pdu.VariableTypeOctetString, ""},
-	"socket_type":          DataOID{3, pdu.VariableTypeInteger, "0"},
-	"main_addr":            DataOID{4, pdu.VariableTypeOctetString, ""},
-	"main_por":             DataOID{5, pdu.VariableTypeInteger, "0"},
-	"main_socke":           DataOID{6, pdu.VariableTypeOctetString, ""},
-	"process_manager":      DataOID{7, pdu.VariableTypeInteger, "0"},
-	"start_time":           DataOID{8, pdu.VariableTypeOctetString, ""},
-	"start_since":          DataOID{9, pdu.VariableTypeTimeTicks, "0"},
-	"accepted_conn":        DataOID{10, pdu.VariableTypeCounter64, "0"},
-	"listen_queue":         DataOID{11, pdu.VariableTypeInteger, "0"},
-	"max_listen_queue":     DataOID{12, pdu.VariableTypeCounter64, "0"},
-	"listen_queue_len":     DataOID{13, pdu.VariableTypeInteger, "0"},
-	"idle_processes":       DataOID{14, pdu.VariableTypeInteger, "0"},
-	"active_processes":     DataOID{15, pdu.VariableTypeInteger, "0"},
-	"total_processes":      DataOID{16, pdu.VariableTypeInteger, "0"},
-	"max_active_processes": DataOID{17, pdu.VariableTypeCounter64, "0"},
-	"max_children_reached": DataOID{18, pdu.VariableTypeCounter64, "0"},
+	"index":                DataOID{"2.1.1", pdu.VariableTypeInteger, "0"},
+	"pool":                 DataOID{"2.1.2", pdu.VariableTypeOctetString, ""},
+	"socket_type":          DataOID{"2.1.3", pdu.VariableTypeInteger, "0"},
+	"main_addr":            DataOID{"2.1.4", pdu.VariableTypeOctetString, ""},
+	"main_por":             DataOID{"2.1.5", pdu.VariableTypeInteger, "0"},
+	"main_socke":           DataOID{"2.1.6", pdu.VariableTypeOctetString, ""},
+	"process_manager":      DataOID{"2.1.7", pdu.VariableTypeInteger, "0"},
+	"start_time":           DataOID{"2.1.8", pdu.VariableTypeOctetString, ""},
+	"start_since":          DataOID{"2.1.9", pdu.VariableTypeTimeTicks, "0"},
+	"accepted_conn":        DataOID{"2.1.10", pdu.VariableTypeCounter64, "0"},
+	"listen_queue":         DataOID{"2.1.11", pdu.VariableTypeInteger, "0"},
+	"max_listen_queue":     DataOID{"2.1.12", pdu.VariableTypeCounter64, "0"},
+	"listen_queue_len":     DataOID{"2.1.13", pdu.VariableTypeInteger, "0"},
+	"idle_processes":       DataOID{"2.1.14", pdu.VariableTypeInteger, "0"},
+	"active_processes":     DataOID{"2.1.15", pdu.VariableTypeInteger, "0"},
+	"total_processes":      DataOID{"2.1.16", pdu.VariableTypeInteger, "0"},
+	"max_active_processes": DataOID{"2.1.17", pdu.VariableTypeCounter64, "0"},
+	"max_children_reached": DataOID{"2.1.18", pdu.VariableTypeCounter64, "0"},
 	//"slow requests":        DataOID{19, pdu.VariableTypeInteger, "0"},
 }
 
 var StatsProcs = map[string]DataOID{
-	"pid":                 DataOID{1, pdu.VariableTypeInteger, "0"},
-	"state":               DataOID{2, pdu.VariableTypeInteger, "0"},
-	"start_time":          DataOID{3, pdu.VariableTypeOctetString, ""},
-	"start_since":         DataOID{4, pdu.VariableTypeTimeTicks, "0"},
-	"requests":            DataOID{5, pdu.VariableTypeCounter64, "0"},
-	"request_duration":    DataOID{6, pdu.VariableTypeCounter32, "0"},
-	"request_method":      DataOID{7, pdu.VariableTypeInteger, "0"},
-	"request_URI":         DataOID{8, pdu.VariableTypeOctetString, ""},
-	"content_length":      DataOID{9, pdu.VariableTypeCounter32, "0"},
-	"user":                DataOID{10, pdu.VariableTypeOctetString, ""},
-	"script":              DataOID{11, pdu.VariableTypeOctetString, ""},
-	"last_request_cpu":    DataOID{12, pdu.VariableTypeInteger, "0"},
-	"last_request_memory": DataOID{13, pdu.VariableTypeCounter32, "0"},
+	"pid":                 DataOID{"3.1.1", pdu.VariableTypeInteger, "0"},
+	"state":               DataOID{"3.1.2", pdu.VariableTypeInteger, "0"},
+	"start_time":          DataOID{"3.1.3", pdu.VariableTypeOctetString, ""},
+	"start_since":         DataOID{"3.1.4", pdu.VariableTypeTimeTicks, "0"},
+	"requests":            DataOID{"3.1.5", pdu.VariableTypeCounter64, "0"},
+	"request_duration":    DataOID{"3.1.6", pdu.VariableTypeCounter32, "0"},
+	"request_method":      DataOID{"3.1.7", pdu.VariableTypeInteger, "0"},
+	"request_URI":         DataOID{"3.1.8", pdu.VariableTypeOctetString, ""},
+	"content_length":      DataOID{"3.1.9", pdu.VariableTypeCounter32, "0"},
+	"user":                DataOID{"3.1.10", pdu.VariableTypeOctetString, ""},
+	"script":              DataOID{"3.1.11", pdu.VariableTypeOctetString, ""},
+	"last_request_cpu":    DataOID{"3.1.12", pdu.VariableTypeInteger, "0"},
+	"last_request_memory": DataOID{"3.1.13", pdu.VariableTypeCounter32, "0"},
 }
 
 type StatsManager struct {
@@ -182,7 +183,6 @@ func (self *StatsManager) LastUpdated() time.Time {
 }
 
 func (self *StatsManager) Load(serverCount int, data string) error {
-	//new_stats := make(map[string]StatsData)
 
 	svrCntIdx := strconv.Itoa(serverCount)
 
@@ -199,6 +199,18 @@ func (self *StatsManager) Load(serverCount int, data string) error {
 	var countPools, countProcs int
 	countPools = 0
 	countProcs = 0
+
+	stats.FPM[svrCntIdx] = *CloneMapStats(StatsFPM)
+
+	if dataOid, ok := stats.FPM[svrCntIdx]["master_index"]; ok {
+		dataOid.Value = svrCntIdx
+		stats.FPM[svrCntIdx]["master_index"] = dataOid
+	}
+
+	if dataOid, ok := stats.FPM[svrCntIdx]["master_version"]; ok {
+		dataOid.Value = "v0.0"
+		stats.FPM[svrCntIdx]["master_version"] = dataOid
+	}
 
 	for block_idx, block := range blocks {
 		lines := strings.Split(block, "\n")
@@ -225,7 +237,7 @@ func (self *StatsManager) Load(serverCount int, data string) error {
 						dataOid.Value = v
 						stats.Pools[strCountPools][k] = dataOid
 
-						idxStr := fmt.Sprintf("%d.%d.%d", serverCount, countPools, dataOid.Index)
+						idxStr := fmt.Sprintf("%s.%d.%d", dataOid.Index, serverCount, countPools)
 						log.Infof("read oid %s", idxStr)
 					} else {
 						log.Warningf("key not found in Pool: %s", k)
@@ -236,7 +248,7 @@ func (self *StatsManager) Load(serverCount int, data string) error {
 						dataOid.Value = v
 						stats.Procs[strCountProcs][k] = dataOid
 
-						idxStr := fmt.Sprintf("%d.%d.%d", serverCount, countProcs, dataOid.Index)
+						idxStr := fmt.Sprintf("%s.%d.%d", dataOid.Index, serverCount, countProcs)
 						log.Infof("read oid %s", idxStr)
 					} else {
 						log.Warningf("key not found in Procs: %s", k)
@@ -269,99 +281,9 @@ func (self *StatsManager) Run(interval_exec uint) {
 }
 
 func (self *StatsManager) Execute() {
-	//statusCmd := "curl http://localhost/status?full"
+	statusCmd := "curl http://localhost/status?full"
 
-	//out, err := exec.Command("bash", "-c", statusCmd).Output()
-
-	out := `pool:                 www
-process manager:      dynamic
-start time:           23/Apr/2016:23:12:01 -0400
-start since:          412
-accepted conn:        9
-listen queue:         0
-max listen queue:     0
-listen queue len:     128
-idle processes:       4
-active processes:     1
-total processes:      5
-max active processes: 1
-max children reached: 0
-slow requests:        0
-
-************************
-pid:                  20320
-state:                Idle
-start time:           23/Apr/2016:23:12:01 -0400
-start since:          412
-requests:             1
-request duration:     273
-request method:       -
-request URI:          -
-content length:       0
-user:                 -
-script:               -
-last request cpu:     0.00
-last request memory:  262144
-
-************************
-pid:                  20321
-state:                Idle
-start time:           23/Apr/2016:23:12:01 -0400
-start since:          412
-requests:             2
-request duration:     167
-request method:       GET
-request URI:          /status
-content length:       0
-user:                 -
-script:               /etc/nginx/html/status
-last request cpu:     0.00
-last request memory:  262144
-
-************************
-pid:                  20322
-state:                Idle
-start time:           23/Apr/2016:23:12:01 -0400
-start since:          412
-requests:             2
-request duration:     382
-request method:       GET
-request URI:          /status?full
-content length:       0
-user:                 -
-script:               /etc/nginx/html/status
-last request cpu:     0.00
-last request memory:  262144
-
-************************
-pid:                  20323
-state:                Idle
-start time:           23/Apr/2016:23:12:01 -0400
-start since:          412
-requests:             2
-request duration:     70
-request method:       -
-request URI:          -
-content length:       0
-user:                 -
-script:               -
-last request cpu:     0.00
-last request memory:  262144
-
-************************
-pid:                  20324
-state:                Running
-start time:           23/Apr/2016:23:12:01 -0400
-start since:          412
-requests:             2
-request duration:     177
-request method:       GET
-request URI:          /status?full
-content length:       0
-user:                 -
-script:               /etc/nginx/html/status
-last request cpu:     0.00
-last request memory:  0`
+	out, err := exec.Command("bash", "-c", statusCmd).Output()
 
 	if true {
 		if err := self.Load(1, string(out)); err != nil {
@@ -370,6 +292,6 @@ last request memory:  0`
 			log.Debug("Stats updated")
 		}
 	} else {
-		//log.Errorf("Command returned with error: %v", err)
+		log.Errorf("Command returned with error: %v", err)
 	}
 }

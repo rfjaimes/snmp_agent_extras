@@ -99,10 +99,22 @@ func (self *StatsSNMPHandler) update() {
 	for svr_idx, device := range keys {
 		stats_data := dataStats[device]
 
+		for fpm_idx, fpm := range stats_data.FPM {
+
+			for _, dataOid := range fpm {
+				oid := self.base_oid + "." + dataOid.Index + "." + strconv.Itoa(svr_idx+1) + "." + fpm_idx
+				self.oids = append(self.oids, value.MustParseOID(oid))
+
+				self.items[oid] = agentx.ListItem{dataOid.Type, dataOid.getOIDValue()}
+
+				log.Infof("write oid %s : %s", oid, dataOid.Value)
+			}
+		}
+
 		for pool_idx, pool := range stats_data.Pools {
 
 			for _, dataOid := range pool {
-				oid := self.base_oid + ".2.1." + strconv.Itoa(dataOid.Index) + "." + strconv.Itoa(svr_idx+1) + "." + pool_idx
+				oid := self.base_oid + "." + dataOid.Index + "." + strconv.Itoa(svr_idx+1) + "." + pool_idx
 				self.oids = append(self.oids, value.MustParseOID(oid))
 
 				self.items[oid] = agentx.ListItem{dataOid.Type, dataOid.getOIDValue()}
@@ -114,7 +126,7 @@ func (self *StatsSNMPHandler) update() {
 		for proc_idx, proc := range stats_data.Procs {
 
 			for _, dataOid := range proc {
-				oid := self.base_oid + ".3.1." + strconv.Itoa(dataOid.Index) + "." + strconv.Itoa(svr_idx+1) + "." + proc_idx
+				oid := self.base_oid + "." + dataOid.Index + "." + strconv.Itoa(svr_idx+1) + "." + proc_idx
 				self.oids = append(self.oids, value.MustParseOID(oid))
 
 				self.items[oid] = agentx.ListItem{dataOid.Type, dataOid.getOIDValue()}

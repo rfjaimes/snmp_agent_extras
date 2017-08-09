@@ -4,6 +4,7 @@ import (
 	"flag"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
 	"github.com/rfjaimes/snmp_agent_extras/commons"
@@ -16,7 +17,8 @@ func main() {
 	commons.SetBasicLogger()
 	log.Info("Starting CPRN snmp subagent")
 
-	config_flag := flag.String("config", "../../conf/config.yaml.in", "Path to config file")
+	absPath, _ := filepath.Abs("../../conf/config.yaml.in")
+	config_flag := flag.String("config", absPath, "Path to config file")
 	flag.Parse()
 
 	config, err := commons.LoadConfig(*config_flag)
